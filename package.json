@@ -6,6 +6,7 @@
   "bin": {
     "eventra": "./dist/index.js"
   },
+  "access": "public",
   "license": "MIT",
   "scripts": {
     "build": "tsc && chmod +x dist/index.js",

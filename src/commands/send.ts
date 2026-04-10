@@ -5,8 +5,7 @@ import {
   saveConfig
 } from "../utils/config";
 
-const EVENTRA_ENDPOINT =
-  "http://localhost:4000/api/v1/cli/events";
+const EVENTRA_ENDPOINT = process.env.EVENTRA_ENDPOINT ?? "";
 
 const CLI_VERSION = "0.0.1";
 

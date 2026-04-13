@@ -1,45 +1,143 @@
 import chalk from "chalk";
-import fs from "fs-extra";
-import path from "path";
 import inquirer from "inquirer";
-import {
-  CONFIG_NAME,
-  saveConfig
-} from "../utils/config";
+
+import { saveConfig } from "../utils/config";
+import {ComponentWrapper, FunctionWrapper} from "../types";
 
 export async function init() {
   console.log(
     chalk.blue("Initializing Eventra...")
   );
 
-  const configPath = path.join(
-    process.cwd(),
-    CONFIG_NAME
+  // API KEY
+  const { apiKey } =
+    await inquirer.prompt([
+      {
+        type: "input",
+        name: "apiKey",
+        message:
+          "API Key (optional):"
+      }
+    ]);
+
+  console.log(
+    chalk.gray(
+      "\nEventra automatically detects:"
+    )
   );
 
-  if (await fs.pathExists(configPath)) {
-    console.log(
-      chalk.yellow(
-        "eventra.json already exists"
-      )
-    );
-    return;
+  console.log(
+    chalk.gray("• track('event')")
+  );
+
+  console.log(
+    chalk.gray(
+      "• tracker.track('event')"
+    )
+  );
+
+  const wrappers: ComponentWrapper[] = [];
+  const functionWrappers: FunctionWrapper[] = [];
+
+
+  // COMPONENT WRAPPERS
+  console.log(
+    chalk.blue(
+      "\nComponent wrappers"
+    )
+  );
+
+  let addComponent = true;
+
+  while (addComponent) {
+    const { useWrapper } =
+      await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "useWrapper",
+          message:
+            "Add component wrapper?",
+          default: false
+        }
+      ]);
+
+    if (!useWrapper) break;
+
+    const { name, prop } =
+      await inquirer.prompt([
+        {
+          type: "input",
+          name: "name",
+          message: "Component name:",
+          validate: (v) =>
+            v ? true : "Required"
+        },
+        {
+          type: "input",
+          name: "prop",
+          message:
+            "Event prop:",
+          default: "event"
+        }
+      ]);
+
+    wrappers.push({
+      name,
+      prop
+    });
   }
 
-  const answers = await inquirer.prompt([
-    {
-      type: "input",
-      name: "apiKey",
-      message:
-        "API Key (optional):"
-    }
-  ]);
+  // FUNCTION WRAPPERS
+  console.log(
+    chalk.blue(
+      "\nFunction wrappers"
+    )
+  );
+
+  let addFunction = true;
+
+  while (addFunction) {
+    const { useWrapper } =
+      await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "useWrapper",
+          message:
+            "Add function wrapper?",
+          default: false
+        }
+      ]);
+
+    if (!useWrapper) break;
+
+    const { name, event } =
+      await inquirer.prompt([
+        {
+          type: "input",
+          name: "name",
+          message:
+            "Function name:"
+        },
+        {
+          type: "input",
+          name: "event",
+          message:
+            "Event field (leave empty if string argument):",
+          default: ""
+        }
+      ]);
+
+    functionWrappers.push({
+      name,
+      event: event || undefined
+    });
+  }
 
   const config = {
-    apiKey: answers.apiKey || "",
+    apiKey,
     events: [],
-    wrappers: [],
-    functionWrappers: [],
+    wrappers,
+    functionWrappers,
     sync: {
       include: [
         "**/*.{ts,tsx,js,jsx,vue,svelte,astro}"
@@ -57,7 +155,13 @@ export async function init() {
 
   console.log(
     chalk.green(
-      "eventra.json created"
+      "\neventra.json created"
+    )
+  );
+
+  console.log(
+    chalk.gray(
+      "\nRun `eventra sync`"
     )
   );
 }

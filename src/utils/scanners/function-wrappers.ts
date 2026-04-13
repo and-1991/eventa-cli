@@ -31,9 +31,9 @@ export function scanFunctionWrappers(
         continue;
 
       const event =
-        extractEvent(
+        extractEventFromArgs(
           call,
-          wrapper.path ?? "0"
+          wrapper.event
         );
 
       if (event)
@@ -95,4 +95,46 @@ function getDeepName(
   }
 
   return name;
+}
+
+
+function extractEventFromArgs(
+  call: CallExpression,
+  event?: string
+): string | null {
+  const args = call.getArguments();
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    // string case
+    if (!event) {
+      if (Node.isStringLiteral(arg)) {
+        return arg.getLiteralText();
+      }
+
+      // template literal
+      if (
+        arg.getKind() ===
+        SyntaxKind.NoSubstitutionTemplateLiteral
+      ) {
+        return arg
+          .getText()
+          .replace(/`/g, "");
+      }
+    }
+
+    // object case
+    if (event) {
+      const result =
+        extractEvent(
+          call,
+          `${i}.${event}`
+        );
+
+      if (result) return result;
+    }
+  }
+
+  return null;
 }

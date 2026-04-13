@@ -44,11 +44,12 @@ export async function sync() {
   const functionWrappers =
     (config.functionWrappers ?? []).map(
       (w) => ({
-        ...w,
-        path: w.path ?? "0"
+        name: w.name,
+        path: w.event
+          ? `0.${w.event}`
+          : "0"
       })
     );
-
   const componentWrappers =
     config.wrappers ?? [];
 

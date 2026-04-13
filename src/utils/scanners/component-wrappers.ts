@@ -4,7 +4,11 @@ import {
   Node
 } from "ts-morph";
 
-import { ComponentWrapper, ExtractedEvent } from "../../types";
+import {
+  ComponentWrapper,
+  ExtractedEvent
+} from "../../types";
+
 import { extractExpression } from "../extract";
 
 export function scanComponentWrappers(
@@ -64,7 +68,7 @@ export function scanComponentWrappers(
 
         if (!init) continue;
 
-        // event="signup"
+        // string
         if (
           Node.isStringLiteral(init)
         ) {
@@ -75,7 +79,7 @@ export function scanComponentWrappers(
           });
         }
 
-        // event={...}
+        // jsx expression
         if (
           Node.isJsxExpression(init)
         ) {
@@ -87,8 +91,16 @@ export function scanComponentWrappers(
           const result =
             extractExpression(expr);
 
-          if (result)
-            events.add(result);
+          if (!result) continue;
+
+          result.values.forEach(
+            (value) =>
+              events.add({
+                value,
+                dynamic:
+                result.dynamic
+              })
+          );
         }
       }
     }

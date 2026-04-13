@@ -1,13 +1,19 @@
 import {
   SourceFile,
-  SyntaxKind
+  SyntaxKind,
+  Node,
+  CallExpression,
+  PropertyAccessExpression
 } from "ts-morph";
+
+import { ExtractedEvent } from "../../types";
+import { extractExpression } from "../extract";
 
 export function scanTrack(
   source: SourceFile
 ) {
   const events =
-    new Set<string>();
+    new Set<ExtractedEvent>();
 
   const calls =
     source.getDescendantsOfKind(
@@ -22,8 +28,7 @@ export function scanTrack(
 
     // track()
     if (
-      expr.getKind() ===
-      SyntaxKind.Identifier
+      Node.isIdentifier(expr)
     ) {
       isTrack =
         expr.getText() === "track";
@@ -31,16 +36,12 @@ export function scanTrack(
 
     // analytics.track()
     if (
-      expr.getKind() ===
-      SyntaxKind.PropertyAccessExpression
+      Node.isPropertyAccessExpression(
+        expr
+      )
     ) {
-      const prop =
-        expr.asKindOrThrow(
-          SyntaxKind.PropertyAccessExpression
-        );
-
       isTrack =
-        prop.getName() === "track";
+        expr.getName() === "track";
     }
 
     if (!isTrack) continue;
@@ -50,34 +51,19 @@ export function scanTrack(
 
     if (!arg) continue;
 
-    if (
-      arg.getKind() ===
-      SyntaxKind.StringLiteral
-    ) {
-      const value =
-        arg.asKindOrThrow(
-          SyntaxKind.StringLiteral
-        );
+    const result =
+      extractExpression(arg);
 
-      events.add(
-        value.getLiteralText()
-      );
-    }
+    if (!result) continue;
 
-    // template literal
-    if (
-      arg.getKind() ===
-      SyntaxKind.NoSubstitutionTemplateLiteral
-    ) {
-      const value =
-        arg.asKindOrThrow(
-          SyntaxKind.NoSubstitutionTemplateLiteral
-        );
-
-      events.add(
-        value.getLiteralText()
-      );
-    }
+    result.values.forEach(
+      (value) =>
+        events.add({
+          value,
+          dynamic:
+          result.dynamic
+        })
+    );
   }
 
   return events;

@@ -6,8 +6,12 @@ import {
   PropertyAccessExpression,
 } from "ts-morph";
 
+import {
+  FunctionWrapper,
+  ExtractedEvent
+} from "../../types";
+
 import { extractExpression } from "../extract";
-import { FunctionWrapper, ExtractedEvent } from "../../types";
 
 export function scanFunctionWrappers(
   source: SourceFile,
@@ -31,14 +35,17 @@ export function scanFunctionWrappers(
       if (wrapper.name !== name)
         continue;
 
-      const result =
+      const results =
         extractEventFromArgs(
           call,
           wrapper.event
         );
 
-      if (result)
-        events.add(result);
+      if (!results) continue;
+
+      results.forEach(
+        (r) => events.add(r)
+      );
     }
   }
 
@@ -48,11 +55,14 @@ export function scanFunctionWrappers(
 function getFunctionName(
   call: CallExpression
 ): string | null {
+
   const expression =
     call.getExpression();
 
   if (
-    Node.isIdentifier(expression)
+    Node.isIdentifier(
+      expression
+    )
   ) {
     return expression.getText();
   }
@@ -73,6 +83,7 @@ function getFunctionName(
 function getDeepName(
   node: PropertyAccessExpression
 ): string {
+
   let current:
     | Node
     | undefined = node;
@@ -97,10 +108,12 @@ function getDeepName(
 function extractEventFromArgs(
   call: CallExpression,
   event?: string
-): ExtractedEvent | null {
+): ExtractedEvent[] | null {
 
   const args =
     call.getArguments();
+
+  const events: ExtractedEvent[] = [];
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -110,11 +123,19 @@ function extractEventFromArgs(
       const result =
         extractExpression(arg);
 
-      if (result)
-        return result;
+      if (!result) continue;
+
+      result.values.forEach(
+        (value) =>
+          events.push({
+            value,
+            dynamic:
+            result.dynamic
+          })
+      );
     }
 
-    // track({ event: "..." })
+    // track({event})
     if (event) {
       const obj =
         arg.asKind(
@@ -136,12 +157,24 @@ function extractEventFromArgs(
 
         if (!init) continue;
 
-        return extractExpression(
-          init
+        const result =
+          extractExpression(init);
+
+        if (!result) continue;
+
+        result.values.forEach(
+          (value) =>
+            events.push({
+              value,
+              dynamic:
+              result.dynamic
+            })
         );
       }
     }
   }
 
-  return null;
+  return events.length
+    ? events
+    : null;
 }

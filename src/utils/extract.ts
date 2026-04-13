@@ -3,92 +3,110 @@ import {
   SyntaxKind
 } from "ts-morph";
 
-import { ExtractedEvent } from "../types";
+export type ExtractResult = {
+  values: string[];
+  dynamic: boolean;
+};
 
 export function extractExpression(
   expr: Node
-): ExtractedEvent | null {
+): ExtractResult | null {
 
-  // "signup"
+  // "event"
   if (Node.isStringLiteral(expr)) {
     return {
-      value: expr.getLiteralText(),
+      values: [expr.getLiteralText()],
       dynamic: false
     };
   }
 
-  // `signup`
+  // `event`
   if (
     expr.getKind() ===
     SyntaxKind.NoSubstitutionTemplateLiteral
   ) {
     return {
-      value: expr
-        .getText()
-        .replace(/`/g, ""),
+      values: [
+        expr
+          .getText()
+          .replace(/`/g, "")
+      ],
       dynamic: false
     };
   }
 
-  // template `${event}`
-  if (
-    Node.isTemplateExpression(expr)
-  ) {
-    return {
-      value: expr.getText(),
-      dynamic: true
-    };
-  }
-
-  // ROUTES.APP
-  if (
-    Node.isPropertyAccessExpression(expr)
-  ) {
-    return {
-      value: expr.getText(),
-      dynamic: true
-    };
-  }
-
-  // EVENT
+  // identifier
   if (
     Node.isIdentifier(expr)
   ) {
     return {
-      value: expr.getText(),
+      values: [expr.getText()],
       dynamic: true
     };
   }
 
-  // getEvent()
+  // property access (ROUTES.ACCOUNT)
+  if (
+    Node.isPropertyAccessExpression(expr)
+  ) {
+    return {
+      values: [expr.getText()],
+      dynamic: true
+    };
+  }
+
+  // ternary
+  if (
+    Node.isConditionalExpression(expr)
+  ) {
+    const values: string[] = [];
+
+    const whenTrue =
+      extractExpression(
+        expr.getWhenTrue()
+      );
+
+    const whenFalse =
+      extractExpression(
+        expr.getWhenFalse()
+      );
+
+    if (whenTrue)
+      values.push(
+        ...whenTrue.values
+      );
+
+    if (whenFalse)
+      values.push(
+        ...whenFalse.values
+      );
+
+    return {
+      values,
+      dynamic: true
+    };
+  }
+
+  // template
+  if (
+    Node.isTemplateExpression(expr)
+  ) {
+    return {
+      values: [expr.getText()],
+      dynamic: true
+    };
+  }
+
+  // call
   if (
     Node.isCallExpression(expr)
   ) {
     return {
-      value:
+      values: [
         expr
           .getExpression()
-          .getText(),
-      dynamic: true
-    };
-  }
-
-  // condition ? "a" : "b"
-  if (
-    Node.isConditionalExpression(expr)
-  ) {
-    return {
-      value: expr.getText(),
-      dynamic: true
-    };
-  }
-
-  // array[index]
-  if (
-    Node.isElementAccessExpression(expr)
-  ) {
-    return {
-      value: expr.getText(),
+          .getText()
+      ],
       dynamic: true
     };
   }

@@ -18,6 +18,8 @@ import { scanTrack } from "../utils/scanners/track";
 import { scanFunctionWrappers } from "../utils/scanners/function-wrappers";
 import { scanComponentWrappers } from "../utils/scanners/component-wrappers";
 
+import { ExtractedEvent } from "../types";
+
 export async function sync() {
   const config = await loadConfig();
 
@@ -76,7 +78,7 @@ export async function sync() {
         { overwrite: true }
       );
 
-    const found = [
+    const found: ExtractedEvent[] = [
       ...scanTrack(source),
       ...scanFunctionWrappers(
         source,
@@ -89,17 +91,7 @@ export async function sync() {
     ];
 
     for (const event of found) {
-      if (!event) continue;
-
-      const value =
-        typeof event === "string"
-          ? event
-          : event.value;
-
-      const dynamic =
-        typeof event === "string"
-          ? false
-          : event.dynamic;
+      const { value, dynamic } = event;
 
       // alias exists
       if (aliases[value]) {

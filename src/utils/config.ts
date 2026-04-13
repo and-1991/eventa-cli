@@ -15,7 +15,7 @@ export function normalizeConfig(
       config.functionWrappers ?? [],
     sync: config.sync ?? {
       include: [
-        "**/*.{ts,tsx,js,jsx}"
+        "**/*.{ts,tsx,js,jsx,vue,svelte,astro}"
       ],
       exclude: [
         "node_modules",

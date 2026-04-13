@@ -41,6 +41,17 @@ export async function sync() {
     }
   );
 
+  const functionWrappers =
+    (config.functionWrappers ?? []).map(
+      (w) => ({
+        ...w,
+        path: w.path ?? "0"
+      })
+    );
+
+  const componentWrappers =
+    config.wrappers ?? [];
+
   for (const file of files) {
     const parser =
       detectParser(file);
@@ -60,9 +71,14 @@ export async function sync() {
     if (parser === "astro")
       content = parseAstro(content);
 
+    const virtualFile =
+      parser === "ts"
+        ? file
+        : file + ".tsx";
+
     const source =
       project.createSourceFile(
-        file,
+        virtualFile,
         content,
         { overwrite: true }
       );
@@ -71,16 +87,17 @@ export async function sync() {
       (e) => events.add(e)
     );
 
+
     scanFunctionWrappers(
       source,
-      config.functionWrappers ?? []
+      functionWrappers
     ).forEach((e) =>
       events.add(e)
     );
 
     scanComponentWrappers(
       source,
-      config.wrappers ?? []
+      componentWrappers
     ).forEach((e) =>
       events.add(e)
     );

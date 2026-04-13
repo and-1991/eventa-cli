@@ -7,6 +7,8 @@
 [![npm version](https://img.shields.io/npm/v/@eventra_dev/eventra-cli.svg)](https://www.npmjs.com/package/@eventra_dev/eventra-cli)
 [![npm downloads](https://img.shields.io/npm/dm/@eventra_dev/eventra-cli.svg)](https://www.npmjs.com/package/@eventra_dev/eventra-cli)
 [![TypeScript](https://img.shields.io/badge/typescript-ready-blue.svg)](https://www.typescriptlang.org/)
+[![Tests](https://github.com/and-1991/eventra-cli/actions/workflows/release.yml/badge.svg)]()
+[![License](https://img.shields.io/npm/l/@eventra_dev/eventra-cli)]()
 
 Eventra CLI automatically discovers feature usage events in your codebase and syncs them with Eventra.
 

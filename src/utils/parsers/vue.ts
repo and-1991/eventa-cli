@@ -11,9 +11,15 @@ export function parseVue(
       /<script[\s\S]*?>([\s\S]*?)<\/script>/
     );
 
+  return `
+${script?.[1] ?? ""}
+
+function __vue_template__() {
   return (
-    (template?.[1] ?? "") +
-    "\n" +
-    (script?.[1] ?? "")
+    <>
+      ${template?.[1] ?? ""}
+    </>
   );
+}
+`;
 }

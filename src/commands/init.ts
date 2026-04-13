@@ -41,7 +41,9 @@ export async function init() {
     wrappers: [],
     functionWrappers: [],
     sync: {
-      include: ["**/*.{ts,tsx,js,jsx}"],
+      include: [
+        "**/*.{ts,tsx,js,jsx,vue,svelte,astro}"
+      ],
       exclude: [
         "node_modules",
         "dist",

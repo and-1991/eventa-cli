@@ -5,7 +5,7 @@ export type ComponentWrapper = {
 
 export type FunctionWrapper = {
   name: string;
-  path: string;
+  path?: string;
 };
 
 export type EventraConfig = {

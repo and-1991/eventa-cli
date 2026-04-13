@@ -61,7 +61,6 @@ export function scanComponentWrappers(
 
         if (!init) continue;
 
-        // event="signup"
         if (
           init.getKind() ===
           SyntaxKind.StringLiteral
@@ -76,7 +75,6 @@ export function scanComponentWrappers(
           );
         }
 
-        // event={"signup"}
         if (
           init.getKind() ===
           SyntaxKind.JsxExpression

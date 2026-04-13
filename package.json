@@ -14,7 +14,7 @@
   "homepage": "https://eventra.dev",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && chmod +x dist/index.js",
+    "build": "tsc",
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
